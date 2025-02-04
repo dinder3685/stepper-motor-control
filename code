@@ -1,0 +1,62 @@
+const int stepPin = 5;
+const int dirPin = 2;
+const int enPin = 8;
+const float stepsPerDegree = 800.0 / 180.0; // 800 adım = 180 derece
+int currentPosition = 90; // Başlangıç konumu ortada (90 derece)
+
+void setup() {
+  pinMode(stepPin, OUTPUT);
+  pinMode(dirPin, OUTPUT);
+  pinMode(enPin, OUTPUT);
+  digitalWrite(enPin, LOW);
+  Serial.begin(9600);
+  Serial.println("Yüz Algılama ile Step Motor Kontrolü Başladı!");
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    String input = Serial.readStringUntil('\n');
+    input.trim();
+    int targetX = input.toInt() * 2; // 0-90 gelen veriyi 0-180'e ölçeklendir
+
+    // Hedef pozisyon sınırlarını kontrol et
+    if (targetX > 180) targetX = 180;
+    if (targetX < 0) targetX = 0;
+
+    // Limit kontrolleri
+    if (currentPosition == 180 && targetX > 180) {
+      Serial.println("Max pos ulaşıldı!");
+      return;
+    }
+    if (currentPosition == 0 && targetX < 0) {
+      Serial.println("Min pos ulaşıldı!");
+      return;
+    }
+
+    // Hareket yönünü belirle
+    if (targetX > currentPosition) {
+      digitalWrite(dirPin, HIGH); // Saat yönü
+    } else if (targetX < currentPosition) {
+      digitalWrite(dirPin, LOW); // Saat yönünün tersi
+    } else {
+      return; // Aynı pozisyona gitmeye gerek yok
+    }
+
+    // Motoru hareket ettir
+    int stepsToMove = abs(targetX - currentPosition) * stepsPerDegree;
+    step(stepsToMove);
+    currentPosition = targetX;
+
+    Serial.print("Motor Pozisyonu: ");
+    Serial.println(currentPosition);
+  }
+}
+
+void step(int steps) {
+  for (int x = 0; x < steps; x++) {
+    digitalWrite(stepPin, HIGH);
+    delayMicroseconds(500);
+    digitalWrite(stepPin, LOW);
+    delayMicroseconds(500);
+  }
+}

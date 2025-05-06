@@ -23,12 +23,6 @@ STM32F4 / STM32F3 / STM32L4 (e.g., Blue Pill)
 
 
 
-## Wiring
-| Stepper Driver | Arduino |
-|---------------|---------|
-| Step | D5 |
-| Dir  | D2 |
-| Enable | D8 |
 
 
 
